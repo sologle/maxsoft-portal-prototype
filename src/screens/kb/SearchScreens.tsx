@@ -3,12 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowUpRight, Download, FileText, Search as SearchIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { ARTICLES, FILES, KB_NODES, TAGS } from '../../data/mock'
-import { isStaff, useDemo } from '../../demo/DemoContext'
+import type { Role } from '../../data/types'
+import { useDemo } from '../../demo/DemoContext'
 import { Topbar } from '../../components/shell/Topbar'
 import { MobilePage } from '../../components/shell/MobileShell'
 import { Button, Chip } from '../../components/ui'
 import { Modal } from '../../components/overlays'
-import { nodePath } from './kb-parts'
+import { articleVisibleToRole, nodePath } from './kb-parts'
 
 const TAG_NAME = Object.fromEntries(TAGS.map((t) => [t.id, t.name]))
 const POPULAR = ['tag-navisa', 'tag-integration', 'tag-setup', 'tag-backup']
@@ -42,10 +43,10 @@ function makeSnippet(text: string, query: string): string {
   return (start > 0 ? '…' : '') + text.slice(start, idx + query.length + 90) + '…'
 }
 
-function searchAll(query: string, staff: boolean, tagFilter: string[], sectionId: string | null): Hit[] {
+function searchAll(query: string, role: Role, tagFilter: string[], sectionId: string | null): Hit[] {
   const q = query.trim().toLowerCase()
   if (!q && tagFilter.length === 0 && !sectionId) return []
-  const visible = ARTICLES.filter((a) => (staff ? true : a.status === 'published'))
+  const visible = ARTICLES.filter((a) => articleVisibleToRole(a, role))
   const hits: Hit[] = []
 
   for (const a of visible) {
@@ -69,7 +70,7 @@ function searchAll(query: string, staff: boolean, tagFilter: string[], sectionId
       meta: `${nodePath(a.nodeId).map((p) => p.name).join(' / ')} · ${a.author} · ${a.updatedAt}`,
       tagIds: a.tagIds,
     })
-    const usedFiles = FILES.filter((f) => a.tagIds.length >= 0 && f.usageArticleIds.includes(a.id))
+    const usedFiles = FILES.filter((f) => f.usageArticleIds.includes(a.id))
     for (const f of usedFiles) {
       if (q !== '' && !f.name.toLowerCase().includes(q)) continue
       hits.push({
@@ -196,7 +197,6 @@ export function SearchD() {
   const [tagFilter, setTagFilter] = useState<string[]>([])
   const [sectionId, setSectionId] = useState<string | null>(null)
   const [focused, setFocused] = useState(false)
-  const staff = isStaff(role)
 
   // Реагируем на смену запроса в URL (например, новый поиск из топбара)
   useEffect(() => {
@@ -205,7 +205,7 @@ export function SearchD() {
     setQuery(q)
   }, [params])
 
-  const hits = useMemo(() => searchAll(query, staff, tagFilter, sectionId), [query, staff, tagFilter, sectionId])
+  const hits = useMemo(() => searchAll(query, role, tagFilter, sectionId), [query, role, tagFilter, sectionId])
   const searched = query.trim() !== '' || tagFilter.length > 0 || sectionId !== null
 
   const open = (hit: Hit) => {
@@ -318,7 +318,6 @@ export function SearchM() {
   const [tagFilter, setTagFilter] = useState<string[]>([])
   const [sectionId, setSectionId] = useState<string | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const staff = isStaff(role)
 
   useEffect(() => {
     const q = params.get('q') ?? ''
@@ -326,7 +325,7 @@ export function SearchM() {
     setQuery(q)
   }, [params])
 
-  const hits = useMemo(() => searchAll(query, staff, tagFilter, sectionId), [query, staff, tagFilter, sectionId])
+  const hits = useMemo(() => searchAll(query, role, tagFilter, sectionId), [query, role, tagFilter, sectionId])
   const searched = query.trim() !== '' || tagFilter.length > 0 || sectionId !== null
 
   const open = (hit: Hit) => {

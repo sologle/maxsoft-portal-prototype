@@ -49,13 +49,13 @@ function KbMenu({ onClose }: { onClose: () => void }) {
       <Link to="/kb" onClick={onClose} className={link}>
         <List size={17} className="text-muted" /> Все разделы
       </Link>
-      <div className={link}>
+      <Link to="/kb/node/n-products" onClick={onClose} className={link}>
         <Folder size={17} className="text-muted" /> Продукты
-      </div>
+      </Link>
       <div className="ml-4">
-        <div className={link}>
+        <Link to="/kb/node/n-navisa" onClick={onClose} className={link}>
           <Folder size={17} className="text-muted" /> НАВИСА
-        </div>
+        </Link>
         <div className="ml-4">
           <Link to="/kb/node/n-navisa-install" onClick={onClose} className={link}>
             <FileText size={17} className="text-muted" /> Установка
@@ -68,14 +68,14 @@ function KbMenu({ onClose }: { onClose: () => void }) {
           </Link>
         </div>
       </div>
-      <div className={link}>
+      <Link to="/kb/node/n-cases" onClick={onClose} className={link}>
         <ChevronDown size={14} className="-rotate-90 text-muted" />
         <Folder size={17} className="text-muted" /> Кейсы внедрения
-      </div>
-      <div className={link}>
+      </Link>
+      <Link to="/kb/node/n-admin" onClick={onClose} className={link}>
         <ChevronDown size={14} className="-rotate-90 text-muted" />
         <Folder size={17} className="text-muted" /> Администрирование
-      </div>
+      </Link>
     </div>
   )
 }
@@ -135,12 +135,16 @@ export function Topbar({ searchContext = false }: { searchContext?: boolean }) {
   const [profileOpen, setProfileOpen] = useState(false)
   const [query, setQuery] = useState('')
   const items = navItemsFor(role)
-  const persona = PERSONA[role as Exclude<typeof role, 'guest'>]
+  const persona = PERSONA[role as Exclude<typeof role, 'guest'>] ?? {
+    name: 'Гость',
+    initials: 'Г',
+    subtitle: 'Гость',
+  }
   const current = location.hash.slice(1) || '/'
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    navigate(`/search?q=${encodeURIComponent(query)}`)
+    navigate(`${base}/search?q=${encodeURIComponent(query)}`)
   }
 
   return (

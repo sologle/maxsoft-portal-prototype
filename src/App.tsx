@@ -65,8 +65,9 @@ function RequireAuth({ children, section }: { children: ReactNode; section?: str
   const { role } = useDemo()
   const location = useLocation()
   if (role === 'guest') {
+    const prefix = isMobilePath(location.pathname) ? '/m' : ''
     const next = location.pathname + location.search
-    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />
+    return <Navigate to={`${prefix}/login?next=${encodeURIComponent(next)}`} replace />
   }
   if (section && !can(section, role)) {
     return <Navigate to={(isMobilePath(location.pathname) ? '/m' : '') + '/denied'} replace />
@@ -144,14 +145,14 @@ function MobileRoutes() {
       <Route path="/m/kb/node/:nodeId" element={<RequireAuth section="kb"><KbTreeM /></RequireAuth>} />
       <Route path="/m/kb/empty" element={<RequireAuth section="kb"><KbTreeEmptyM /></RequireAuth>} />
       <Route path="/m/article/:slug" element={<RequireAuth section="kb"><ArticleM /></RequireAuth>} />
-      <Route path="/m/kb/editor" element={<RequireAuth section="kb-staff"><KbEditorM /></RequireAuth>} />
-      <Route path="/m/kb/structure" element={<RequireAuth section="kb-staff"><KbStructureM /></RequireAuth>} />
-      <Route path="/m/kb/tags" element={<RequireAuth section="kb-staff"><KbTagsM /></RequireAuth>} />
-      <Route path="/m/kb/files" element={<RequireAuth section="kb-staff"><KbFilesM /></RequireAuth>} />
+      <Route path="/m/kb/editor" element={<RequireAuth section="kb-editor"><KbEditorM /></RequireAuth>} />
+      <Route path="/m/kb/structure" element={<RequireAuth section="kb-admin"><KbStructureM /></RequireAuth>} />
+      <Route path="/m/kb/tags" element={<RequireAuth section="kb-admin"><KbTagsM /></RequireAuth>} />
+      <Route path="/m/kb/files" element={<RequireAuth section="kb-admin"><KbFilesM /></RequireAuth>} />
       <Route path="/m/search" element={<RequireAuth section="search"><SearchM /></RequireAuth>} />
       <Route path="/m/companies" element={<RequireAuth section="org"><CompaniesM /></RequireAuth>} />
       <Route path="/m/companies/:id" element={<RequireAuth section="org"><CompanyCardM /></RequireAuth>} />
-      <Route path="/m/company-types" element={<RequireAuth section="org"><CompanyTypesM /></RequireAuth>} />
+      <Route path="/m/company-types" element={<RequireAuth section="org-types"><CompanyTypesM /></RequireAuth>} />
       <Route path="/m/users" element={<RequireAuth section="org-users"><PortalUsersM /></RequireAuth>} />
       <Route path="/m/company/users" element={<RequireAuth section="company-users"><CompanyUsersM /></RequireAuth>} />
       <Route path="/m/admin" element={<RequireAuth section="plat"><AdminHomeM /></RequireAuth>} />
@@ -180,14 +181,14 @@ function DesktopRoutes() {
       <Route path="/kb/node/:nodeId" element={<RequireAuth section="kb"><KbTreeD /></RequireAuth>} />
       <Route path="/kb/empty" element={<RequireAuth section="kb"><KbTreeEmptyD /></RequireAuth>} />
       <Route path="/article/:slug" element={<RequireAuth section="kb"><ArticleD /></RequireAuth>} />
-      <Route path="/kb/editor" element={<RequireAuth section="kb-staff"><KbEditorD /></RequireAuth>} />
-      <Route path="/kb/structure" element={<RequireAuth section="kb-staff"><KbStructureD /></RequireAuth>} />
-      <Route path="/kb/tags" element={<RequireAuth section="kb-staff"><KbTagsD /></RequireAuth>} />
-      <Route path="/kb/files" element={<RequireAuth section="kb-staff"><KbFilesD /></RequireAuth>} />
+      <Route path="/kb/editor" element={<RequireAuth section="kb-editor"><KbEditorD /></RequireAuth>} />
+      <Route path="/kb/structure" element={<RequireAuth section="kb-admin"><KbStructureD /></RequireAuth>} />
+      <Route path="/kb/tags" element={<RequireAuth section="kb-admin"><KbTagsD /></RequireAuth>} />
+      <Route path="/kb/files" element={<RequireAuth section="kb-admin"><KbFilesD /></RequireAuth>} />
       <Route path="/search" element={<RequireAuth section="search"><SearchD /></RequireAuth>} />
       <Route path="/companies" element={<RequireAuth section="org"><CompaniesD /></RequireAuth>} />
       <Route path="/companies/:id" element={<RequireAuth section="org"><CompanyCardD /></RequireAuth>} />
-      <Route path="/company-types" element={<RequireAuth section="org"><CompanyTypesD /></RequireAuth>} />
+      <Route path="/company-types" element={<RequireAuth section="org-types"><CompanyTypesD /></RequireAuth>} />
       <Route path="/users" element={<RequireAuth section="org-users"><PortalUsersD /></RequireAuth>} />
       <Route path="/company/users" element={<RequireAuth section="company-users"><CompanyUsersD /></RequireAuth>} />
       <Route path="/admin" element={<RequireAuth section="plat"><AdminHomeD /></RequireAuth>} />

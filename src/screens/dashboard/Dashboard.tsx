@@ -4,7 +4,6 @@ import {
   BookOpen,
   CirclePlus,
   Clock3,
-  FileStack,
   FileText,
   Layers,
   LifeBuoy,
@@ -12,6 +11,7 @@ import {
   MessagesSquare,
   ShieldCheck,
   Sparkles,
+  Upload,
   Users,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -74,8 +74,8 @@ function linksFor(role: Role, base: string): LinkRow[] {
     case 'engineer':
       return [
         { icon: <FileText size={17} className="text-primary" />, label: 'Мои черновики', path: `${base}/kb` },
-        { icon: <FileStack size={17} className="text-primary" />, label: 'Реестр файлов', path: `${base}/kb/files` },
         { icon: <Users size={17} className="text-primary" />, label: 'Компании', path: `${base}/companies` },
+        { icon: <Upload size={17} className="text-primary" />, label: 'Импорт DOCX', path: `${base}/kb/editor?import=1` },
       ]
     case 'manager':
       return [

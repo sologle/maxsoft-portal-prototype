@@ -1,8 +1,21 @@
 import { useMemo, useState } from 'react'
 import { ChevronDown, FileText, Folder, FolderOpen, Search } from 'lucide-react'
-import { ARTICLES, KB_NODES, TAGS } from '../../data/mock'
-import type { Article } from '../../data/types'
+import { ARTICLES, COMPANIES, KB_NODES, TAGS } from '../../data/mock'
+import type { Article, Role } from '../../data/types'
 import { isStaff, useDemo } from '../../demo/DemoContext'
+
+/** Видимость статьи роли: staff видит черновики, клиенты — только опубликованное по типу своей компании */
+export function articleVisibleToRole(a: Article, role: Role): boolean {
+  if (isStaff(role)) return true
+  if (a.status !== 'published') return false
+  const company = COMPANIES.find((c) => c.id === 'c-sibir')
+  if (!company) return false
+  return a.typeIds.includes(company.typeId)
+}
+
+export function visibleArticles(role: Role): Article[] {
+  return ARTICLES.filter((a) => articleVisibleToRole(a, role))
+}
 import { useFormatNav } from '../../components/nav'
 
 const TAG_NAME = Object.fromEntries(TAGS.map((t) => [t.id, t.name]))
@@ -139,7 +152,7 @@ export function ArticleListCard({ nodeId }: { nodeId: string }) {
   const { role } = useDemo()
   const node = KB_NODES.find((n) => n.id === nodeId)
   const path = nodePath(nodeId)
-  const articles = articlesOfNode(nodeId).filter((a) => isStaff(role) || a.status === 'published')
+  const articles = articlesOfNode(nodeId).filter((a) => articleVisibleToRole(a, role))
 
   return (
     <div className="flex min-w-0 flex-1 flex-col rounded-xl border border-border/60 bg-surface shadow-(--shadow-card)">

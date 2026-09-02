@@ -7,6 +7,7 @@ import { Topbar } from '../../components/shell/Topbar'
 import { MobilePage } from '../../components/shell/MobileShell'
 import { Input } from '../../components/ui'
 import { Drawer } from '../../components/overlays'
+import { useFormatBase, useFormatNav } from '../../components/nav'
 
 const FORMAT_FILTERS = [
   { id: 'pdf', label: 'PDF', icon: FileText },
@@ -32,7 +33,7 @@ function articleTitle(id: string): string {
 }
 
 function UsageDrawer({ file, onClose }: { file: KnowledgeFile; onClose: () => void }) {
-  const navigate = useNavigate()
+  const fmtNav = useFormatNav()
   return (
     <Drawer open onClose={onClose} title="Места использования">
       <p className="mb-1 text-sm font-semibold">{file.name}</p>
@@ -49,7 +50,7 @@ function UsageDrawer({ file, onClose }: { file: KnowledgeFile; onClose: () => vo
               key={id}
               onClick={() => {
                 onClose()
-                navigate(`/article/${ARTICLES.find((a) => a.id === id)?.slug ?? ''}`)
+                fmtNav(`/article/${ARTICLES.find((a) => a.id === id)?.slug ?? ''}`)
               }}
               className="cursor-pointer rounded-lg border border-border/60 px-3.5 py-2.5 text-left text-[13px] font-medium transition-colors hover:border-primary/40 hover:bg-secondary/50"
             >
@@ -70,14 +71,16 @@ export function KbFilesD() {
 }
 
 export function KbFilesM() {
+  const navigate = useNavigate()
   return (
-    <MobilePage title="Реестр файлов" onBack={() => (window.location.hash = '#/m/kb')}>
+    <MobilePage title="Реестр файлов" onBack={() => navigate('/m/kb')}>
       <FilesScreen mobile />
     </MobilePage>
   )
 }
 
 function FilesScreen({ mobile = false }: { mobile?: boolean }) {
+  const fmtBase = useFormatBase()
   const [usage, setUsage] = useState<KnowledgeFile | null>(null)
   const [activeFormats, setActiveFormats] = useState<string[]>([])
   const [query, setQuery] = useState('')
@@ -92,12 +95,12 @@ function FilesScreen({ mobile = false }: { mobile?: boolean }) {
 
   return (
     <>
-      <Topbar />
+      {!mobile && <Topbar />}
       <main className={mobile ? 'flex flex-1 flex-col px-4 pt-4 pb-10' : 'mx-auto w-full max-w-[1320px] flex-1 px-8 pt-6 pb-10'}>
         <nav className="mb-2 flex items-center gap-2 text-[13px] text-muted">
           <span>Администрирование</span>
           <span>›</span>
-          <button onClick={() => (window.location.hash = '#/kb')} className="cursor-pointer hover:text-text">База знаний</button>
+          <button onClick={() => (window.location.hash = fmtBase + '/kb')} className="cursor-pointer hover:text-text">База знаний</button>
           <span>›</span>
           <span className="font-medium text-text">Файлы</span>
         </nav>

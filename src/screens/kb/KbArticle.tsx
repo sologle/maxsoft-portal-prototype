@@ -117,9 +117,10 @@ function useAccessCheck(article: Article | undefined): 'ok' | 'no-article' | 'de
     if (!article) return 'no-article'
     if (isStaff(role)) return 'ok'
     if (article.status === 'draft') return 'denied'
+    if (role === 'guest') return 'ok'
     const company = COMPANIES.find((c) => c.id === 'c-sibir')
-    if (role !== 'guest' && company && !article.typeIds.includes(company.typeId)) return 'denied'
-    return 'ok'
+    if (!company) return 'denied'
+    return article.typeIds.includes(company.typeId) ? 'ok' : 'denied'
   }, [article, role])
 }
 

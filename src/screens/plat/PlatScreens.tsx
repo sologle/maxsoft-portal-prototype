@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   AlertTriangle,
   ArrowRight,
@@ -14,7 +14,7 @@ import {
   Settings2,
   Shapes,
 } from 'lucide-react'
-import { AUDIT, FIELD_SETTINGS, INTEGRATIONS } from '../../data/mock'
+import { ARTICLES, AUDIT, COMPANIES, FIELD_SETTINGS, INTEGRATIONS } from '../../data/mock'
 import type { AuditEntry, CompanyFieldSetting } from '../../data/types'
 import { useDemo } from '../../demo/DemoContext'
 import { Topbar } from '../../components/shell/Topbar'
@@ -78,7 +78,7 @@ function AdminHomeBody({ mobile = false }: { mobile?: boolean }) {
       text: 'Структура, теги, файлы',
       link: (
         <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary">
-          214 статей <ArrowRight size={14} />
+          {ARTICLES.length} статей <ArrowRight size={14} />
         </span>
       ),
       onClick: () => navigate(`${base}/kb`),
@@ -151,7 +151,7 @@ function AdminHomeBody({ mobile = false }: { mobile?: boolean }) {
   )
 }
 
-const COMPANIES_COUNT = 86
+const COMPANIES_COUNT = COMPANIES.length
 
 export function AdminHomeD() {
   return (
@@ -172,25 +172,28 @@ export function AdminHomeM() {
 
 export function AdminDeniedD() {
   const navigate = useNavigate()
+  const { role } = useDemo()
   return (
     <div className="flex min-h-full flex-col">
-      <Topbar />
-      <NotAvailable onBack={() => navigate('/dashboard')} backLabel="На главную" />
+      {role !== 'guest' && <Topbar />}
+      <NotAvailable onBack={() => navigate(role === 'guest' ? '/' : '/dashboard')} backLabel="На главную" />
     </div>
   )
 }
 
 export function AdminDeniedM() {
   const navigate = useNavigate()
+  const { role } = useDemo()
   return (
     <MobilePage title="Администрирование">
-      <NotAvailable onBack={() => navigate('/m/dashboard')} backLabel="На главную" />
+      <NotAvailable onBack={() => navigate(role === 'guest' ? '/m' : '/m/dashboard')} backLabel="На главную" />
     </MobilePage>
   )
 }
 
 function IntegrationsBody({ mobile = false, errorVariant = false }: { mobile?: boolean; errorVariant?: boolean }) {
   const { toast } = useDemo()
+  const [, setParams] = useSearchParams()
   const [smtp, setSmtp] = useState(INTEGRATIONS.smtp)
   const [bxUrl, setBxUrl] = useState(INTEGRATIONS.bitrix.url)
   const smtpError = errorVariant
@@ -243,7 +246,7 @@ function IntegrationsBody({ mobile = false, errorVariant = false }: { mobile?: b
             <Input type="password" defaultValue="••••••••••" />
           </Field>
         </div>
-        <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-4">
+        <div className="mt-4 flex items-center justify-between gap-2 border-t border-border/60 pt-4">
           <Button
             variant="secondary"
             icon={<RefreshCw size={14} />}
@@ -257,6 +260,13 @@ function IntegrationsBody({ mobile = false, errorVariant = false }: { mobile?: b
           </Button>
           <Button onClick={() => toast('Настройки почты сохранены')}>Сохранить</Button>
         </div>
+        <button
+          onClick={() => setParams(smtpError ? {} : { 'smtp-error': '1' })}
+          className="mt-3 cursor-pointer rounded-lg border border-dashed border-[#b8c2cd] bg-[#f7f9fb] px-3 py-2 text-left text-[12px] text-[#53606d] transition-colors hover:border-primary/40"
+        >
+          <span className="font-semibold text-[#3d4854]">Демо: </span>
+          {smtpError ? 'вернуть состояние «подключено»' : 'показать состояние «ошибка подключения»'}
+        </button>
       </Card>
 
       <Card className="p-6">
@@ -289,13 +299,14 @@ function IntegrationsBody({ mobile = false, errorVariant = false }: { mobile?: b
 }
 
 export function IntegrationsD() {
+  const [params] = useSearchParams()
   return (
     <div className="flex min-h-full flex-col">
       <Topbar />
       <main className="mx-auto w-full max-w-[1320px] flex-1 px-8 pt-6 pb-10">
         <Crumbs items={['Администрирование', 'Интеграции']} />
         <h1 className="mb-5 text-[28px] font-extrabold">Интеграции</h1>
-        <IntegrationsBody />
+        <IntegrationsBody errorVariant={params.get('smtp-error') === '1'} />
       </main>
     </div>
   )
@@ -303,10 +314,11 @@ export function IntegrationsD() {
 
 export function IntegrationsM() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
   return (
     <MobilePage title="Интеграции" onBack={() => navigate('/m/admin')}>
       <div className="flex flex-1 flex-col px-4 pt-4 pb-10">
-        <IntegrationsBody mobile />
+        <IntegrationsBody mobile errorVariant={params.get('smtp-error') === '1'} />
       </div>
     </MobilePage>
   )

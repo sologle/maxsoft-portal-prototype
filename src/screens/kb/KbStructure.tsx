@@ -9,7 +9,7 @@ import { MobilePage } from '../../components/shell/MobileShell'
 import { Button, Field, Input, Select } from '../../components/ui'
 import { Modal } from '../../components/overlays'
 
-type Dialog = { kind: 'create' } | { kind: 'rename'; node: KbNode } | { kind: 'delete'; node: KbNode } | null
+type Dialog = { kind: 'create' } | { kind: 'rename'; node: KbNode } | { kind: 'delete'; node: KbNode } | { kind: 'delete-denied'; node: KbNode } | null
 
 function StructureTree({ selectedId, onSelect, onEdit, onDelete }: {
   selectedId: string
@@ -111,7 +111,8 @@ function StructureScreen({ mobile = false }: { mobile?: boolean }) {
     setDialog({ kind: 'rename', node: n })
   }
   const openDelete = (n: KbNode) => {
-    setDialog({ kind: 'delete', node: n })
+    const empty = KB_NODES.filter((x) => x.parentId === n.id).length === 0 && ARTICLES.filter((a) => a.nodeId === n.id).length === 0
+    setDialog(empty ? { kind: 'delete', node: n } : { kind: 'delete-denied', node: n })
   }
 
   const submit = () => {
@@ -227,6 +228,20 @@ function StructureScreen({ mobile = false }: { mobile?: boolean }) {
             </Field>
           )}
         </div>
+      </Modal>
+
+      <Modal
+        open={dialog?.kind === 'delete-denied'}
+        onClose={() => setDialog(null)}
+        title="Удаление недоступно"
+        width={480}
+        footer={<Button onClick={() => setDialog(null)}>Понятно</Button>}
+      >
+        <p className="text-sm leading-relaxed text-muted">
+          Раздел «{dialog?.kind === 'delete-denied' ? dialog.node.name : ''}» содержит статьи или дочерние разделы. Сначала переместите материалы, затем
+          удалите раздел.
+          <span className="mt-1 block font-(--font-caption) text-xs text-[#9aa4b0]">APP_KB_NODE_NOT_EMPTY</span>
+        </p>
       </Modal>
 
       <Modal

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { Building2, CheckCircle2, ChevronDown, MoreHorizontal, Plus, Search, Users, XCircle } from 'lucide-react'
 import { COMPANIES, COMPANY_TYPES } from '../../data/mock'
 import type { Company } from '../../data/types'
 import { useDemo } from '../../demo/DemoContext'
 import { Topbar } from '../../components/shell/Topbar'
+import { useFormatNav } from '../../components/nav'
 import { MobilePage } from '../../components/shell/MobileShell'
 import { Button, Field, Input, Select } from '../../components/ui'
 import { Modal } from '../../components/overlays'
@@ -29,10 +30,11 @@ const EDGE: Record<Company['status'], string> = {
   Приостановлена: 'border-l-[3px] border-l-danger',
 }
 
-function AddCompanyDialog({ open, conflict, onClose, onCreated }: { open: boolean; conflict: boolean; onClose: () => void; onCreated: () => void }) {
+function AddCompanyDialog({ open, onClose, onCreated, onConflict }: { open: boolean; onClose: () => void; onCreated: () => void; onConflict: () => void }) {
   const { toast } = useDemo()
   const [name, setName] = useState('')
   const [inn, setInn] = useState('')
+  const [domains, setDomains] = useState('')
   const [errors, setErrors] = useState<{ name?: string; inn?: string; domain?: string }>({})
   return (
     <Modal
@@ -50,13 +52,17 @@ function AddCompanyDialog({ open, conflict, onClose, onCreated }: { open: boolea
               if (!/^\d{10,12}$/.test(inn.trim())) errs.inn = 'ИНН — 10 или 12 цифр'
               setErrors(errs)
               if (Object.keys(errs).length > 0) return
-              if (conflict) {
+              // Уникальность домена и ИНН: совпадение с существующей компанией — ручная проверка
+              const domainList = domains.split(',').map((d) => d.trim().toLowerCase()).filter(Boolean)
+              const domainConflict = domainList.some((d) => COMPANIES.some((c) => c.domains.includes(d)))
+              const innConflict = COMPANIES.some((c) => c.inn === inn.trim())
+              if (domainConflict || innConflict) {
                 onClose()
-                window.location.hash = '#/companies?conflict=1'
-              } else {
-                toast(`Компания «${name.trim()}» добавлена`)
-                onCreated()
+                onConflict()
+                return
               }
+              toast(`Компания «${name.trim()}» добавлена`)
+              onCreated()
             }}
           >
             Создать
@@ -69,7 +75,7 @@ function AddCompanyDialog({ open, conflict, onClose, onCreated }: { open: boolea
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="ООО «Пример»" autoFocus />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="ИНН" required error={errors.inn} hint={conflict ? undefined : 'Проверяется на уникальность'}>
+          <Field label="ИНН" required error={errors.inn} hint="Проверяется на уникальность">
             <Input value={inn} onChange={(e) => setInn(e.target.value)} placeholder="1234567890" inputMode="numeric" invalid={!!errors.inn} />
           </Field>
           <Field label="Тип компании" required>
@@ -81,8 +87,12 @@ function AddCompanyDialog({ open, conflict, onClose, onCreated }: { open: boolea
           </Field>
         </div>
         <Field label="Рабочие домены" hint="Через запятую. Домен проверяется на уникальность">
-          <Input placeholder="example.ru" />
+          <Input value={domains} onChange={(e) => setDomains(e.target.value)} placeholder="example.ru" />
         </Field>
+        <div className="rounded-lg border border-dashed border-[#b8c2cd] bg-[#f7f9fb] px-3.5 py-2.5 text-[12px] leading-relaxed text-[#53606d]">
+          <span className="font-semibold text-[#3d4854]">Демо-подсказка. </span>
+          Введите ИНН 5405012345 или домен sibirproject.ru — покажем состояние «конфликт домена или ИНН».
+        </div>
       </div>
     </Modal>
   )
@@ -104,13 +114,13 @@ function ConflictBanner() {
 }
 
 function CompaniesScreen({ mobile = false }: { mobile?: boolean }) {
-  const navigate = useNavigate()
   const { role } = useDemo()
   const [params, setParams] = useSearchParams()
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [menuFor, setMenuFor] = useState<string | null>(null)
+  const fmtNav = useFormatNav()
   const isManager = role === 'manager'
   const canAdd = role === 'admin' || role === 'engineer' || isManager
 
@@ -125,14 +135,14 @@ function CompaniesScreen({ mobile = false }: { mobile?: boolean }) {
     [query, typeFilter, statusFilter],
   )
 
-  const openCard = (id: string) => navigate(`/companies/${id}`)
+  const openCard = (id: string) => fmtNav(`/companies/${id}`)
 
   const addOpen = params.get('new') === '1'
   const conflict = params.get('conflict') === '1'
 
   return (
     <>
-      <Topbar />
+      {!mobile && <Topbar />}
       <main className={mobile ? 'flex flex-1 flex-col px-4 pt-4 pb-10' : 'mx-auto w-full max-w-[1320px] flex-1 px-8 pt-6 pb-10'}>
         {mobile ? (
           <h1 className="mb-4 text-[24px] font-extrabold">Компании</h1>
@@ -147,6 +157,11 @@ function CompaniesScreen({ mobile = false }: { mobile?: boolean }) {
           <Button className="mb-4 w-full" onClick={() => setParams({ new: '1' })} icon={<Plus size={15} />}>
             Добавить компанию
           </Button>
+        )}
+        {mobile && canAdd && (
+          <button onClick={() => setParams({ new: '1', conflict: '1' })} className="mb-4 cursor-pointer rounded-lg border border-dashed border-[#b8c2cd] bg-[#f7f9fb] px-3 py-2 text-left text-[12px] text-[#53606d]">
+            <span className="font-semibold text-[#3d4854]">Демо: </span>показать состояние «конфликт домена или ИНН»
+          </button>
         )}
 
         <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -255,7 +270,7 @@ function CompaniesScreen({ mobile = false }: { mobile?: boolean }) {
                             <button onClick={(e) => { e.stopPropagation(); openCard(c.id); setMenuFor(null) }} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] hover:bg-surface-2">
                               Открыть карточку
                             </button>
-                            <button onClick={(e) => { e.stopPropagation(); setMenuFor(null); navigate(`/companies/${c.id}?tab=users`) }} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] hover:bg-surface-2">
+                            <button onClick={(e) => { e.stopPropagation(); setMenuFor(null); fmtNav(`/companies/${c.id}?tab=users`) }} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] hover:bg-surface-2">
                               Пользователи
                             </button>
                           </div>
@@ -283,8 +298,12 @@ function CompaniesScreen({ mobile = false }: { mobile?: boolean }) {
         )}
       </main>
 
-      <AddCompanyDialog open={addOpen} conflict={false} onClose={() => setParams({})} onCreated={() => setParams({})} />
-      <AddCompanyDialog open={conflict} conflict onClose={() => setParams({})} onCreated={() => setParams({})} />
+      <AddCompanyDialog
+        open={addOpen || conflict}
+        onClose={() => setParams({})}
+        onCreated={() => setParams({})}
+        onConflict={() => setParams({ conflict: '1' })}
+      />
     </>
   )
 }

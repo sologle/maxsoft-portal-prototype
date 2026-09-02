@@ -8,11 +8,12 @@ import { Topbar } from '../../components/shell/Topbar'
 import { MobilePage } from '../../components/shell/MobileShell'
 import { Button, Field, Input, Textarea } from '../../components/ui'
 import { Modal } from '../../components/overlays'
+import { useFormatNav } from '../../components/nav'
 
 type Dialog = { kind: 'create' } | { kind: 'edit'; type: CompanyType } | { kind: 'delete'; type: CompanyType } | null
 
 function TypesScreen({ mobile = false }: { mobile?: boolean }) {
-  const navigate = useNavigate()
+  const fmtNav = useFormatNav()
   const { toast } = useDemo()
   const [dialog, setDialog] = useState<Dialog>(null)
   const [name, setName] = useState('')
@@ -48,12 +49,12 @@ function TypesScreen({ mobile = false }: { mobile?: boolean }) {
 
   return (
     <>
-      <Topbar />
+      {!mobile && <Topbar />}
       <main className={mobile ? 'flex flex-1 flex-col px-4 pt-4 pb-10' : 'mx-auto w-full max-w-[1320px] flex-1 px-8 pt-6 pb-10'}>
         <nav className="mb-2 flex items-center gap-2 text-[13px] text-muted">
           <span>Администрирование</span>
           <span>›</span>
-          <button onClick={() => navigate('/companies')} className="cursor-pointer hover:text-text">Компании</button>
+          <button onClick={() => fmtNav('/companies')} className="cursor-pointer hover:text-text">Компании</button>
           <span>›</span>
           <span className="font-medium text-text">Типы компаний</span>
         </nav>
@@ -89,7 +90,7 @@ function TypesScreen({ mobile = false }: { mobile?: boolean }) {
                 </div>
                 <p className="mt-3 text-[13px] leading-relaxed text-muted">{t.description}</p>
                 <div className="mt-4 flex gap-2 border-t border-border/60 pt-4">
-                  <Button variant="secondary" size="sm" className="flex-1" onClick={() => navigate('/companies')}>
+                  <Button variant="secondary" size="sm" className="flex-1" onClick={() => fmtNav('/companies')}>
                     Компании ({t.companiesCount})
                   </Button>
                   <Button
@@ -156,8 +157,9 @@ export function CompanyTypesD() {
 }
 
 export function CompanyTypesM() {
+  const navigate = useNavigate()
   return (
-    <MobilePage title="Типы компаний" onBack={() => (window.location.hash = '#/m/companies')}>
+    <MobilePage title="Типы компаний" onBack={() => navigate('/m/companies')}>
       <TypesScreen mobile />
     </MobilePage>
   )

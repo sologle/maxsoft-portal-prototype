@@ -366,7 +366,7 @@ export function KbEditorD() {
   const slug = params.get('article')
   const article = useMemo(() => ARTICLES.find((a) => a.slug === slug) ?? null, [slug])
   const [importState, setImportState] = useState<ImportState>({ phase: 'idle', fileName: '', progress: 0 })
-  const [importOpen, setImportOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(() => params.get('import') === '1')
   const [panelOpen, setPanelOpen] = useState(false)
   const [preview, setPreview] = useState(false)
   const importTimer = useRef<number | undefined>(undefined)
@@ -469,11 +469,10 @@ export function KbEditorM() {
   const slug = params.get('article')
   const article = useMemo(() => ARTICLES.find((a) => a.slug === slug) ?? null, [slug])
   const [importState, setImportState] = useState<ImportState>({ phase: 'idle', fileName: '', progress: 0 })
-  const [importOpen, setImportOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(() => params.get('import') === '1')
   const [panelOpen, setPanelOpen] = useState(false)
   const [preview, setPreview] = useState(false)
   const importTimer = useRef<number | undefined>(undefined)
-  const fileRef = useRef<HTMLInputElement>(null)
 
   const startImport = (fileName: string) => {
     setImportState({ phase: 'running', fileName, progress: 5 })
@@ -512,7 +511,6 @@ export function KbEditorM() {
             Импорт Word
           </Button>
         </div>
-        <input ref={fileRef} type="file" accept=".docx" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) startImport(f.name) }} />
       </div>
       {preview && (
         <Modal open onClose={() => setPreview(false)} title="Предпросмотр">

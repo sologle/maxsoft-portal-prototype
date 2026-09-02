@@ -132,10 +132,16 @@ export function LoginD() {
 }
 
 export function LoginM() {
+  const navigate = useNavigate()
   return (
     <AuthScene mobile>
       <LoginForm mobile />
-      <p className="mt-5 text-center text-[13px] text-muted">Нет учётной записи? Зарегистрируйтесь</p>
+      <p className="mt-5 text-center text-[13px] text-muted">
+        Нет учётной записи?{' '}
+        <button onClick={() => navigate('/m/register')} className="cursor-pointer font-medium text-link hover:underline">
+          Зарегистрируйтесь
+        </button>
+      </p>
     </AuthScene>
   )
 }

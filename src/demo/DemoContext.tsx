@@ -96,10 +96,11 @@ export function useDemo(): DemoState {
   return ctx
 }
 
-const ROLE = {
-  admin: new Set(['dashboard', 'kb', 'kb-staff', 'search', 'org', 'org-users', 'plat']),
-  engineer: new Set(['dashboard', 'kb', 'kb-staff', 'search', 'org', 'org-users']),
-  manager: new Set(['dashboard', 'kb', 'kb-staff', 'search', 'org', 'org-users']),
+// Разделы этапа 1 по ролям (см. docs/design/page-inventory.md)
+const ROLE: Record<Role, Set<string>> = {
+  admin: new Set(['dashboard', 'kb', 'kb-editor', 'kb-admin', 'search', 'org', 'org-types', 'org-users', 'plat']),
+  engineer: new Set(['dashboard', 'kb', 'kb-editor', 'search', 'org', 'org-users']),
+  manager: new Set(['dashboard', 'kb', 'search', 'org', 'org-users']),
   'client-admin': new Set(['dashboard', 'kb', 'search', 'company-users']),
   'client-user': new Set(['dashboard', 'kb', 'search']),
   guest: new Set([] as string[]),

@@ -18,7 +18,8 @@ function initials(name: string): string {
 }
 
 function InviteDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { toast } = useDemo()
+  const { toast, role: currentRole } = useDemo()
+  const isAdmin = currentRole === 'admin'
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<Role>('client-user')
   const [companyId, setCompanyId] = useState(COMPANIES[0].id)
@@ -54,12 +55,20 @@ function InviteDialog({ open, onClose }: { open: boolean; onClose: () => void })
         <Field label="Рабочий email" required error={error && !email ? error : undefined}>
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@company.ru" autoFocus />
         </Field>
-        <Field label="Роль на портале" required>
-          <Select value={role} onChange={(e) => setRole(e.target.value as Role)}>
-            {ROLES.filter((r) => r.id !== 'guest').map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </Select>
+        <Field
+          label="Роль на портале"
+          required
+          hint={isAdmin ? undefined : 'Назначать роли может только администратор портала — новый пользователь получит роль «Сотрудник клиента»'}
+        >
+          {isAdmin ? (
+            <Select value={role} onChange={(e) => setRole(e.target.value as Role)}>
+              {ROLES.filter((r) => r.id !== 'guest').map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </Select>
+          ) : (
+            <Input value="Сотрудник клиента" disabled />
+          )}
         </Field>
         <Field label="Компания" required>
           <Select value={companyId} onChange={(e) => setCompanyId(e.target.value)}>
@@ -186,7 +195,7 @@ function UsersScreen({ mobile = false }: { mobile?: boolean }) {
 
   return (
     <>
-      <Topbar />
+      {!mobile && <Topbar />}
       <main className={mobile ? 'flex flex-1 flex-col px-4 pt-4 pb-10' : 'mx-auto w-full max-w-[1320px] flex-1 px-8 pt-6 pb-10'}>
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
           <div>

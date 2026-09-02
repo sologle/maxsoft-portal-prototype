@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Ban, MoreHorizontal, ShieldCheck, UserPlus } from 'lucide-react'
+import { Ban, MoreHorizontal, UserPlus } from 'lucide-react'
 import { COMPANY_USERS_SIBIR } from '../../data/mock'
 import type { PortalUser } from '../../data/types'
 import { useDemo } from '../../demo/DemoContext'
@@ -153,7 +153,6 @@ function UsersScreen({ mobile = false }: { mobile?: boolean }) {
                         <Ban size={14} className="text-muted" /> {u.status === 'Заблокирован' ? 'Разблокировать' : 'Заблокировать'}
                       </button>
                       <button onClick={() => setMenuFor(null)} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] hover:bg-surface-2">
-                        <ShieldCheck size={14} className="text-muted" /> История доступа
                       </button>
                     </div>
                   </>
@@ -203,9 +202,6 @@ function UsersScreen({ mobile = false }: { mobile?: boolean }) {
                           <div className="absolute right-4 top-11 z-30 w-[210px] animate-(--animate-scale-in) rounded-xl border border-border bg-surface p-1.5 shadow-(--shadow-pop)">
                             <button onClick={() => { setBlockFor(u); setMenuFor(null) }} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] hover:bg-surface-2">
                               <Ban size={14} className="text-muted" /> {u.status === 'Заблокирован' ? 'Разблокировать' : 'Заблокировать'}
-                            </button>
-                            <button onClick={() => setMenuFor(null)} className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] hover:bg-surface-2">
-                              <ShieldCheck size={14} className="text-muted" /> История доступа
                             </button>
                           </div>
                         </>

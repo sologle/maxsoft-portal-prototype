@@ -7,6 +7,8 @@ import { Topbar } from '../../components/shell/Topbar'
 import { MobilePage } from '../../components/shell/MobileShell'
 import { Button, Field, Input, Select } from '../../components/ui'
 import { Modal } from '../../components/overlays'
+import { useFormatBase } from '../../components/nav'
+import { useNavigate } from 'react-router-dom'
 
 type TagDialog = { kind: 'create'; groupId: string } | { kind: 'edit'; tag: Tag } | { kind: 'delete'; tag: Tag } | { kind: 'group' } | null
 type MenuState = { tag: Tag; x: number; y: number } | null
@@ -16,14 +18,16 @@ export function KbTagsD() {
 }
 
 export function KbTagsM() {
+  const navigate = useNavigate()
   return (
-    <MobilePage title="Теги статей" onBack={() => window.location.hash = '#/m/kb'}>
+    <MobilePage title="Теги статей" onBack={() => navigate('/m/kb')}>
       <TagsScreen mobile />
     </MobilePage>
   )
 }
 
 function TagsScreen({ mobile = false }: { mobile?: boolean }) {
+  const fmtBase = useFormatBase()
   const { toast } = useDemo()
   const [dialog, setDialog] = useState<TagDialog>(null)
   const [menu, setMenu] = useState<MenuState>(null)
@@ -83,12 +87,12 @@ function TagsScreen({ mobile = false }: { mobile?: boolean }) {
 
   return (
     <>
-      <Topbar />
+      {!mobile && <Topbar />}
       <main className={mobile ? 'flex flex-1 flex-col px-4 pt-4 pb-10' : 'mx-auto w-full max-w-[1320px] flex-1 px-8 pt-6 pb-10'}>
         <nav className="mb-2 flex items-center gap-2 text-[13px] text-muted">
           <span>Администрирование</span>
           <span>›</span>
-          <button onClick={() => (window.location.hash = '#/kb')} className="cursor-pointer hover:text-text">База знаний</button>
+          <button onClick={() => (window.location.hash = fmtBase + '/kb')} className="cursor-pointer hover:text-text">База знаний</button>
           <span>›</span>
           <span className="font-medium text-text">Теги</span>
         </nav>

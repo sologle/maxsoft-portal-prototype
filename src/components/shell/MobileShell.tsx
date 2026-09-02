@@ -57,7 +57,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
   }, [onClose])
 
   const persona = PERSONA[role as Exclude<typeof role, 'guest'>]
-  const sections = PERSONA && navFor(role)
+  const sections = navFor(role)
 
   function navFor(r: string): { label: string; path: string; icon: 'home' | 'kb' | 'org' | 'users' | 'admin' | 'company-users' }[] {
     const list: { label: string; path: string; icon: 'home' | 'kb' | 'org' | 'users' | 'admin' | 'company-users' }[] = [
