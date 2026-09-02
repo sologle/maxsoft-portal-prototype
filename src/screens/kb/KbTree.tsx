@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { BookOpen, FolderOpen } from 'lucide-react'
-import { KB_NODES } from '../../data/mock'
 import { useDemo } from '../../demo/DemoContext'
 import { Topbar } from '../../components/shell/Topbar'
 import { MobilePage } from '../../components/shell/MobileShell'
@@ -18,7 +17,7 @@ export function KbTreeD() {
     setSelected(id)
     navigate(`/kb/node/${id}`)
   }
-  const effective = selected ?? KB_NODES.find((n) => n.parentId === null)?.id ?? null
+  const effective = selected ?? 'n-navisa-install'
   return (
     <div className="flex min-h-full flex-col">
       <Topbar searchContext />
@@ -56,7 +55,7 @@ export function KbTreeM() {
     setShowTree(false)
     navigate(`/kb/node/${id}`)
   }
-  const effective = selected ?? KB_NODES.find((n) => n.parentId === null)?.id ?? null
+  const effective = selected ?? 'n-navisa-install'
   return (
     <MobilePage title="База знаний" showSearch onBack={showTree ? undefined : () => setShowTree(true)}>
       <div className="flex flex-1 flex-col gap-3 px-4 pt-4 pb-8">

@@ -289,7 +289,7 @@ export function ArticleM() {
         <div className="mt-3 flex flex-wrap gap-1.5">
           {article.tagIds.map((t) => (
             <span key={t} className="rounded-md border border-primary/20 bg-secondary px-2.5 py-1 text-xs font-medium text-primary-strong">
-              {t.replace('tag-', '')}
+              {TAG_NAME[t] ?? t}
             </span>
           ))}
         </div>

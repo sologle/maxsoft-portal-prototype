@@ -19,6 +19,7 @@ import type { Role } from '../../data/types'
 import { PERSONA, useDemo } from '../../demo/DemoContext'
 import { Card } from '../../components/ui'
 import { MobilePage } from '../../components/shell/MobileShell'
+import { Topbar } from '../../components/shell/Topbar'
 
 interface Action {
   icon: ReactNode
@@ -232,7 +233,12 @@ function DashboardBody({ role, mobile = false }: { role: Exclude<Role, 'guest'>;
 export function DashboardD() {
   const { role } = useDemo()
   if (role === 'guest') return null
-  return <DashboardBody role={role} />
+  return (
+    <div className="flex min-h-full flex-col">
+      <Topbar searchContext />
+      <DashboardBody role={role} />
+    </div>
+  )
 }
 
 export function DashboardM() {

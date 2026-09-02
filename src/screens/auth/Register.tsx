@@ -67,11 +67,14 @@ function RegisterForm({ mobile = false }: { mobile?: boolean }) {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     const errs: Partial<Record<keyof FormState, string>> = {}
+    const domain = form.email.split('@')[1]?.toLowerCase() ?? ''
+    const knownDomain = domain in KNOWN_DOMAINS
     if (!form.lastName.trim()) errs.lastName = 'Укажите фамилию'
     if (!form.firstName.trim()) errs.firstName = 'Укажите имя'
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) errs.email = 'Укажите рабочий email'
     if (!form.companyName.trim()) errs.companyName = 'Укажите наименование компании'
-    if (!form.inn.trim()) errs.inn = 'Укажите ИНН'
+    // ИНН обязателен только для новой компании: известный домен уже определяет компанию
+    if (!knownDomain && !form.inn.trim()) errs.inn = 'Укажите ИНН'
     if (form.password.length < 6) errs.password = 'Минимум 6 символов'
     if (form.password2 !== form.password) errs.password2 = 'Пароли не совпадают'
     setErrors(errs)
@@ -159,9 +162,9 @@ function RegisterForm({ mobile = false }: { mobile?: boolean }) {
         </button>
       </p>
       <DemoHint>
-        Демо-сценарии: email на <b>@sibirproject.ru</b> и пустой/совпадающий ИНН — привязка к существующей компании; любой новый домен и новый ИНН —
-        создание новой компании; известный домен с чужим ИНН (например 7701234567) — ручная проверка. Кнопка «Зарегистрироваться» с пустыми полями
-        покажет ошибки формы.
+        Демо-сценарии: email на <b>@sibirproject.ru</b> — привязка к существующей компании (ИНН не обязателен); любой новый домен и новый ИНН — создание
+        новой компании; известный домен с чужим ИНН (например 7701234567) — ручная проверка. Кнопка «Зарегистрироваться» с пустыми полями покажет
+        ошибки формы.
       </DemoHint>
     </AuthCard>
   )

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowUpRight, Download, FileText, Search as SearchIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -198,6 +198,13 @@ export function SearchD() {
   const [focused, setFocused] = useState(false)
   const staff = isStaff(role)
 
+  // Реагируем на смену запроса в URL (например, новый поиск из топбара)
+  useEffect(() => {
+    const q = params.get('q') ?? ''
+    setInput(q)
+    setQuery(q)
+  }, [params])
+
   const hits = useMemo(() => searchAll(query, staff, tagFilter, sectionId), [query, staff, tagFilter, sectionId])
   const searched = query.trim() !== '' || tagFilter.length > 0 || sectionId !== null
 
@@ -312,6 +319,12 @@ export function SearchM() {
   const [sectionId, setSectionId] = useState<string | null>(null)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const staff = isStaff(role)
+
+  useEffect(() => {
+    const q = params.get('q') ?? ''
+    setInput(q)
+    setQuery(q)
+  }, [params])
 
   const hits = useMemo(() => searchAll(query, staff, tagFilter, sectionId), [query, staff, tagFilter, sectionId])
   const searched = query.trim() !== '' || tagFilter.length > 0 || sectionId !== null

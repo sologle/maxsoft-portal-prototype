@@ -26,6 +26,11 @@ import { PortalUsersD, PortalUsersM } from './screens/org/PortalUsers'
 import { CompanyUsersD, CompanyUsersM } from './screens/org/CompanyUsers'
 import { AdminHomeD, AdminHomeM, AdminDeniedD, AdminDeniedM, IntegrationsD, IntegrationsM, AuditD, AuditM, CompanyFieldsD, CompanyFieldsM } from './screens/plat/PlatScreens'
 
+/** Мобильные маршруты: '/m' и всё, что начинается с '/m/' */
+function isMobilePath(pathname: string): boolean {
+  return pathname === '/m' || pathname.startsWith('/m/')
+}
+
 function useViewportCategory(): 'narrow' | 'wide' {
   const [cat, setCat] = useState<'narrow' | 'wide'>(() => (window.innerWidth < 768 ? 'narrow' : 'wide'))
   useEffect(() => {
@@ -44,11 +49,11 @@ function FormatSync({ category }: { category: 'narrow' | 'wide' }) {
   useEffect(() => {
     if (prev.current === category) return
     prev.current = category
-    const isMobilePath = location.pathname.startsWith('/m/')
-    if (category === 'narrow' && !isMobilePath) {
+    const mobile = isMobilePath(location.pathname)
+    if (category === 'narrow' && !mobile) {
       navigate('/m' + (location.pathname === '/' ? '' : location.pathname) + location.search, { replace: true })
     }
-    if (category === 'wide' && isMobilePath) {
+    if (category === 'wide' && mobile) {
       navigate(location.pathname.slice(2) + location.search, { replace: true })
     }
   }, [category, location.pathname, location.search, navigate])
@@ -64,7 +69,7 @@ function RequireAuth({ children, section }: { children: ReactNode; section?: str
     return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />
   }
   if (section && !can(section, role)) {
-    return <Navigate to={(location.pathname.startsWith('/m/') ? '/m' : '') + '/denied'} replace />
+    return <Navigate to={(isMobilePath(location.pathname) ? '/m' : '') + '/denied'} replace />
   }
   return <>{children}</>
 }
@@ -76,7 +81,7 @@ function GuestOnly({ children }: { children: ReactNode }) {
   if (role !== 'guest') {
     const params = new URLSearchParams(location.search)
     const next = params.get('next')
-    return <Navigate to={next ?? (location.pathname.startsWith('/m/') ? '/m/dashboard' : '/dashboard')} replace />
+    return <Navigate to={next ?? (isMobilePath(location.pathname) ? '/m/dashboard' : '/dashboard')} replace />
   }
   return <>{children}</>
 }
@@ -86,8 +91,11 @@ function StageRoot({ children }: { children: ReactNode }) {
   return (
     <div className="relative flex min-h-full flex-col">
       <OverlayRootProvider root={root}>
-        <span ref={setRoot} className="absolute inset-0 -z-10" aria-hidden />
         {children}
+        <div
+          ref={setRoot}
+          className="pointer-events-none absolute inset-0 z-50 [&_*]:pointer-events-auto"
+        />
       </OverlayRootProvider>
     </div>
   )
@@ -122,34 +130,35 @@ const kindFromHash = () => (window.location.hash.split('/').pop() ?? 'review') a
 function MobileRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<GuestOnly><GuestHomeM /></GuestOnly>} />
-      <Route path="/login" element={<GuestOnly><LoginM /></GuestOnly>} />
-      <Route path="/register" element={<GuestOnly><RegisterM /></GuestOnly>} />
-      <Route path="/register/result/:kind" element={<GuestOnly><RegisterResultM kind={kindFromHash()} /></GuestOnly>} />
-      <Route path="/recovery" element={<GuestOnly><RecoveryM step="email" /></GuestOnly>} />
-      <Route path="/recovery/sent" element={<GuestOnly><RecoveryM step="sent" /></GuestOnly>} />
-      <Route path="/recovery/new" element={<GuestOnly><RecoveryM step="new" /></GuestOnly>} />
-      <Route path="/recovery/success" element={<GuestOnly><RecoveryM step="success" /></GuestOnly>} />
-      <Route path="/dashboard" element={<RequireAuth section="dashboard"><DashboardM /></RequireAuth>} />
-      <Route path="/kb" element={<RequireAuth section="kb"><KbTreeM /></RequireAuth>} />
-      <Route path="/kb/node/:nodeId" element={<RequireAuth section="kb"><KbTreeM /></RequireAuth>} />
-      <Route path="/kb/empty" element={<RequireAuth section="kb"><KbTreeEmptyM /></RequireAuth>} />
-      <Route path="/article/:slug" element={<RequireAuth section="kb"><ArticleM /></RequireAuth>} />
-      <Route path="/kb/editor" element={<RequireAuth section="kb-staff"><KbEditorM /></RequireAuth>} />
-      <Route path="/kb/structure" element={<RequireAuth section="kb-staff"><KbStructureM /></RequireAuth>} />
-      <Route path="/kb/tags" element={<RequireAuth section="kb-staff"><KbTagsM /></RequireAuth>} />
-      <Route path="/kb/files" element={<RequireAuth section="kb-staff"><KbFilesM /></RequireAuth>} />
-      <Route path="/search" element={<RequireAuth section="search"><SearchM /></RequireAuth>} />
-      <Route path="/companies" element={<RequireAuth section="org"><CompaniesM /></RequireAuth>} />
-      <Route path="/companies/:id" element={<RequireAuth section="org"><CompanyCardM /></RequireAuth>} />
-      <Route path="/company-types" element={<RequireAuth section="org"><CompanyTypesM /></RequireAuth>} />
-      <Route path="/users" element={<RequireAuth section="org-users"><PortalUsersM /></RequireAuth>} />
-      <Route path="/company/users" element={<RequireAuth section="company-users"><CompanyUsersM /></RequireAuth>} />
-      <Route path="/admin" element={<RequireAuth section="plat"><AdminHomeM /></RequireAuth>} />
-      <Route path="/admin/integrations" element={<RequireAuth section="plat"><IntegrationsM /></RequireAuth>} />
-      <Route path="/admin/audit" element={<RequireAuth section="plat"><AuditM /></RequireAuth>} />
-      <Route path="/admin/company-fields" element={<RequireAuth section="plat"><CompanyFieldsM /></RequireAuth>} />
-      <Route path="/denied" element={<AdminDeniedM />} />
+      <Route path="/m" element={<GuestOnly><GuestHomeM /></GuestOnly>} />
+      <Route path="/m/" element={<GuestOnly><GuestHomeM /></GuestOnly>} />
+      <Route path="/m/login" element={<GuestOnly><LoginM /></GuestOnly>} />
+      <Route path="/m/register" element={<GuestOnly><RegisterM /></GuestOnly>} />
+      <Route path="/m/register/result/:kind" element={<GuestOnly><RegisterResultM kind={kindFromHash()} /></GuestOnly>} />
+      <Route path="/m/recovery" element={<GuestOnly><RecoveryM step="email" /></GuestOnly>} />
+      <Route path="/m/recovery/sent" element={<GuestOnly><RecoveryM step="sent" /></GuestOnly>} />
+      <Route path="/m/recovery/new" element={<GuestOnly><RecoveryM step="new" /></GuestOnly>} />
+      <Route path="/m/recovery/success" element={<GuestOnly><RecoveryM step="success" /></GuestOnly>} />
+      <Route path="/m/dashboard" element={<RequireAuth section="dashboard"><DashboardM /></RequireAuth>} />
+      <Route path="/m/kb" element={<RequireAuth section="kb"><KbTreeM /></RequireAuth>} />
+      <Route path="/m/kb/node/:nodeId" element={<RequireAuth section="kb"><KbTreeM /></RequireAuth>} />
+      <Route path="/m/kb/empty" element={<RequireAuth section="kb"><KbTreeEmptyM /></RequireAuth>} />
+      <Route path="/m/article/:slug" element={<RequireAuth section="kb"><ArticleM /></RequireAuth>} />
+      <Route path="/m/kb/editor" element={<RequireAuth section="kb-staff"><KbEditorM /></RequireAuth>} />
+      <Route path="/m/kb/structure" element={<RequireAuth section="kb-staff"><KbStructureM /></RequireAuth>} />
+      <Route path="/m/kb/tags" element={<RequireAuth section="kb-staff"><KbTagsM /></RequireAuth>} />
+      <Route path="/m/kb/files" element={<RequireAuth section="kb-staff"><KbFilesM /></RequireAuth>} />
+      <Route path="/m/search" element={<RequireAuth section="search"><SearchM /></RequireAuth>} />
+      <Route path="/m/companies" element={<RequireAuth section="org"><CompaniesM /></RequireAuth>} />
+      <Route path="/m/companies/:id" element={<RequireAuth section="org"><CompanyCardM /></RequireAuth>} />
+      <Route path="/m/company-types" element={<RequireAuth section="org"><CompanyTypesM /></RequireAuth>} />
+      <Route path="/m/users" element={<RequireAuth section="org-users"><PortalUsersM /></RequireAuth>} />
+      <Route path="/m/company/users" element={<RequireAuth section="company-users"><CompanyUsersM /></RequireAuth>} />
+      <Route path="/m/admin" element={<RequireAuth section="plat"><AdminHomeM /></RequireAuth>} />
+      <Route path="/m/admin/integrations" element={<RequireAuth section="plat"><IntegrationsM /></RequireAuth>} />
+      <Route path="/m/admin/audit" element={<RequireAuth section="plat"><AuditM /></RequireAuth>} />
+      <Route path="/m/admin/company-fields" element={<RequireAuth section="plat"><CompanyFieldsM /></RequireAuth>} />
+      <Route path="/m/denied" element={<AdminDeniedM />} />
       <Route path="*" element={<Navigate to="/m" replace />} />
     </Routes>
   )
@@ -193,13 +202,13 @@ function DesktopRoutes() {
 
 function AppRoutes() {
   const location = useLocation()
-  const isMobilePath = location.pathname.startsWith('/m/')
+  const mobile = isMobilePath(location.pathname)
   const switchFormat = useCounterpartNavigate()
   const { format, setFormat } = useDemo()
 
   useEffect(() => {
-    setFormat(isMobilePath ? 'mobile' : 'desktop')
-  }, [isMobilePath, setFormat])
+    setFormat(mobile ? 'mobile' : 'desktop')
+  }, [mobile, setFormat])
 
   useEffect(() => {
     const onResize = () => {
@@ -213,7 +222,7 @@ function AppRoutes() {
   return (
     <>
       <FormatSync category={useViewportCategory()} />
-      {isMobilePath ? (
+      {mobile ? (
         <MobileLayout>
           <MobileRoutes />
         </MobileLayout>
